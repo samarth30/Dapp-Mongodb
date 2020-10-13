@@ -2,7 +2,8 @@ const Koa = require("koa");
 const Router = require("@koa/router");
 const cors = require("@koa/cors");
 const ethers = require("ethers");
-const PaymentProcessor = require("../frontend/src/contracts/PaymentProcessor.json");
+// const web3 = require("web3");
+const PaymentProcessor = require("../client/src/contracts/PaymentProcessor.json");
 const { Payment } = require("./db.js");
 
 const app = new Koa();
@@ -14,12 +15,13 @@ const items = {
 };
 
 //generate a paymentId for purchage
-router.get("/api/getPaymentId/:itemId", async (ctx, next) => {
+router.get("/api/getPaymentId/:itemId/:account", async (ctx, next) => {
   //1. generate paymentId randomly
   const paymentId = (Math.random() * 10000).toFixed(0);
   //2. save paymentId + itemId in mongo
   await Payment.create({
     id: paymentId,
+    account: ctx.params.account,
     itemId: ctx.params.itemId,
     paid: false,
   });
@@ -53,8 +55,9 @@ app.listen(4000, () => {
 
 const listenToEvents = () => {
   const provider = new ethers.providers.JsonRpcProvider(
-    "http://localhost:9545"
+    "http://127.0.0.1:7545"
   );
+  // const web3 = new Web3('HTTP://127.0.0.1:7545')
   const networkId = "5777";
   //when connecting to mainnet or public testnets, use this instead
   //const provider = ethers.providers.getDefaultProvider('mainnet | kovan | etc..');
@@ -66,6 +69,7 @@ const listenToEvents = () => {
     PaymentProcessor.abi,
     provider
   );
+  console.log("hello");
   paymentProcessor.on("PaymentDone", async (payer, amount, paymentId, date) => {
     console.log(`New payment received: 
       from ${payer} 
