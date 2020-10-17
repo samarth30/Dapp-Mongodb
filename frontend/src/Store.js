@@ -17,7 +17,9 @@ const ITEMS = [
 
 function Store({ paymentProcessor, dai }) {
   const buy = async (item) => {
-    const response1 = await axios.get(`${API_URL}/api/getPaymentId/${item.id}`);
+    const response1 = await axios.get(
+      `${API_URL}/api/getPaymentId/${item.id}/$`
+    );
 
     const tx1 = await dai.approve(paymentProcessor.address, item.price);
     await tx1.wait();
